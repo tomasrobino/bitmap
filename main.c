@@ -3,10 +3,6 @@
 #include <string.h>
 #include <windows.h>
 
-typedef struct bmp {
-    char extraMasks[16];
-} bmp;
-
 typedef enum {
     TYPE_BITMAPCOREHEADER=12,
     TYPE_OS22XBITMAPHEADER=64,
@@ -30,17 +26,16 @@ typedef enum {
     TYPE_BI_CMYKRLE4
 } CompressionIdentifier;
 
-bmp* readBMP(char name[]);
+void readBMP(char name[]);
 
 int main(void) {
-    bmp* buffer = readBMP("img.bmp");
+    readBMP("img.bmp");
 
-    free(buffer);
     return 0;
 }
 
 
-bmp* readBMP(char name[]) {
+void readBMP(char name[]) {
     FILE* file = fopen(name, "rb");
     //fseek(file, 0, SEEK_END);
     //const unsigned long fileLen = ftell(file);
