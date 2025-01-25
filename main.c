@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 typedef enum {
@@ -104,7 +105,7 @@ void readBMP(char name[]);
 void* buildStruct(FILE* file);
 
 int main(void) {
-    readBMP("img.bmp");
+    //void* header = readBMP("img.bmp");
 
     return 0;
 }
@@ -210,7 +211,7 @@ void* buildStruct(FILE* file) {
     unsigned int importantColors;
     fread(&importantColors, sizeof(unsigned int), 1, file);
 
-    //ONLY FOR BITMAPV4HEADER
+    //V4 AND V5
     if (size==108 || size==124) {
         //red, green and blue Masks, specifies the color component of each pixel,
         //valid only if compression is set to BI_BITFIELDS.
@@ -252,11 +253,30 @@ void* buildStruct(FILE* file) {
         fread(&blueGamma, sizeof(unsigned int), 1, file);
 
         if (size==108) {
-
+            headerV4* header = malloc(sizeof(headerV1));
+            header->size=size;
+            header->width=width;
+            header->height=height;
+            header->colorPlanes=colorPlanes;
+            header->bitCount=bitCount;
+            header->compression=compression;
+            header->sizeImage=dataSize;
+            header->horizontalRes=horizontalRes;
+            header->verticalRes=verticalRes;
+            header->colorNum=colorNum;
+            header->importantColors=importantColors;
+            header->redMask=redMask;
+            header->greenMask=greenMask;
+            header->blueMask=blueMask;
+            header->alphaMask=alphaMask;
+            header->colorSpace=colorSpace;
+            header->endpoints=endpoints;
+            header->redGamma=redGamma;
+            header->greenGamma=greenGamma;
+            header->blueGamma=header->blueGamma;
+            return header;
         }
-    }
 
-    if (size==124) {
         //Rendering intent for bitmap
         //offset 122
         unsigned int intent;
@@ -272,7 +292,47 @@ void* buildStruct(FILE* file) {
         //Skipping reserved bytes
         //offset 134
         fseek(file, 4, SEEK_CUR);
+
+        headerV5* header = malloc(sizeof(headerV1));
+        header->size=size;
+        header->width=width;
+        header->height=height;
+        header->colorPlanes=colorPlanes;
+        header->bitCount=bitCount;
+        header->compression=compression;
+        header->sizeImage=dataSize;
+        header->horizontalRes=horizontalRes;
+        header->verticalRes=verticalRes;
+        header->colorNum=colorNum;
+        header->importantColors=importantColors;
+        header->redMask=redMask;
+        header->greenMask=greenMask;
+        header->blueMask=blueMask;
+        header->alphaMask=alphaMask;
+        header->colorSpace=colorSpace;
+        header->endpoints=endpoints;
+        header->redGamma=redGamma;
+        header->greenGamma=greenGamma;
+        header->blueGamma=header->blueGamma;
+        header->intent=intent;
+        header->profileData=profileData;
+        header->profileSize=profileSize;
+        return header;
     }
+
+    headerV1* header = malloc(sizeof(headerV1));
+    header->size=size;
+    header->width=width;
+    header->height=height;
+    header->colorPlanes=colorPlanes;
+    header->bitCount=bitCount;
+    header->compression=compression;
+    header->sizeImage=dataSize;
+    header->horizontalRes=horizontalRes;
+    header->verticalRes=verticalRes;
+    header->colorNum=colorNum;
+    header->importantColors=importantColors;
+    return header;
 }
 
 void readBMP(char name[]) {
