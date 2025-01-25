@@ -7,17 +7,7 @@ typedef struct bmp {
     char extraMasks[16];
 } bmp;
 
-typedef union {
-    BITMAPCOREHEADER bitmapcoreheader;
-    BITMAPV5HEADER bitmapv5_header;
-} headerTypes;
-
-typedef struct {
-    headerTypes value;
-    int type;
-} header;
-
-enum {
+typedef enum {
     TYPE_BITMAPCOREHEADER,
     TYPE_OS22XBITMAPHEADER,
     TYPE_BITMAPINFOHEADER,
@@ -25,12 +15,18 @@ enum {
     TYPE_BITMAPV3INFOHEADER,
     TYPE_BITMAPV4HEADER,
     TYPE_BITMAPV5HEADER
-};
+} DIBHeaders;
+
+typedef struct {
+    DIBHeaders type;
+    void* bytes;
+} headerDIB;
+
 
 bmp* readBMP(char name[]);
 
 int main(void) {
-    char* buffer = readBMP("img.bmp");
+    bmp* buffer = readBMP("img.bmp");
 
     free(buffer);
     return 0;
@@ -77,42 +73,56 @@ bmp* readBMP(char name[]) {
     fread(&offset, 4, 1, file);
 
     //DIB Header
-    header dibHeader;
+    headerDIB dibHeader;
 
     //DIB Header size
     unsigned int dibSize;
     fread(&dibSize, sizeof(DWORD), 1, file);
 
+    //All headers have a size=dibSize except for when dibSize=16
+    if (dibSize == 16) {
+        dibHeader.bytes = calloc(1,64);
+    } else {
+        dibHeader.bytes = malloc(dibSize);
+    }
+
+    //Setting types
     switch (dibSize) {
         case 12:
             //BITMAPCOREHEADER
             //OS21XBITMAPHEADER
-            dibHeader.type = TYPE_BITMAPCOREHEADER;
-            dibHeader.value
+            dibHeader.type = TYPE_BITMAPV4HEADER;
             break;
         case 64:
             //OS22XBITMAPHEADER
-            break;
         case 16:
             //OS22XBITMAPHEADER
             //Same as last one but the rest of the values are assumed to be 0
+            dibHeader.type = TYPE_OS22XBITMAPHEADER;
             break;
         case 40:
             //BITMAPINFOHEADER
+            dibHeader.type = TYPE_BITMAPINFOHEADER;
             break;
         case 52:
             //BITMAPV2INFOHEADER
+            dibHeader.type = TYPE_BITMAPV2INFOHEADER;
             break;
         case 56:
             //BITMAPV3INFOHEADER
+            dibHeader.type = TYPE_BITMAPV3INFOHEADER;
             break;
         case 108:
             //BITMAPV4HEADER
+            dibHeader.type = TYPE_BITMAPV4HEADER;
                 break;
         case 124:
             //BITMAPV5HEADER
+            dibHeader.type = TYPE_BITMAPV5HEADER;
             break;
         default:
             //Unrecognized DIB header
     }
+
+
 }
