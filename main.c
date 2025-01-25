@@ -1,7 +1,5 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-#include <windows.h>
 
 typedef enum {
     TYPE_BITMAPCOREHEADER=12,
@@ -25,6 +23,82 @@ typedef enum {
     TYPE_BI_CMYKRLE8,
     TYPE_BI_CMYKRLE4
 } CompressionIdentifier;
+
+typedef struct {
+    int ciexyzX : 32;
+    int ciexyzY : 32;
+    int ciexyzZ : 32;
+} CIEXYZ;
+
+typedef struct {
+    CIEXYZ ciexyzRed;
+    CIEXYZ ciexyzGreen;
+    CIEXYZ ciexyzBlue;
+} CIEXYZTRIPLE;
+
+typedef struct {
+    unsigned int size : 32;
+    int width : 32;
+    int height: 32;
+    unsigned short colorPlanes : 16;
+    unsigned short bitCount : 16;
+    unsigned int compression : 32;
+    unsigned int sizeImage : 32;
+    int horizontalRes : 32;
+    int verticalRes :32;
+    unsigned int colorNum : 32;
+    unsigned int importantColors : 32;
+} headerV1;
+
+typedef struct {
+    unsigned int size : 32;
+    int width : 32;
+    int height: 32;
+    unsigned short colorPlanes : 16;
+    unsigned short bitCount : 16;
+    unsigned int compression : 32;
+    unsigned int sizeImage : 32;
+    int horizontalRes : 32;
+    int verticalRes :32;
+    unsigned int colorNum : 32;
+    unsigned int importantColors : 32;
+    unsigned int redMask : 32;
+    unsigned int greenMask : 32;
+    unsigned int blueMask : 32;
+    unsigned int alphaMask : 32;
+    unsigned int colorSpace : 32;
+    CIEXYZTRIPLE endpoints;
+    unsigned int redGamma : 32;
+    unsigned int greenGamma : 32;
+    unsigned int blueGamma : 32;
+} headerV4;
+
+typedef struct {
+    unsigned int size : 32;
+    int width : 32;
+    int height: 32;
+    unsigned short colorPlanes : 16;
+    unsigned short bitCount : 16;
+    unsigned int compression : 32;
+    unsigned int sizeImage : 32;
+    int horizontalRes : 32;
+    int verticalRes :32;
+    unsigned int colorNum : 32;
+    unsigned int importantColors : 32;
+    unsigned int redMask : 32;
+    unsigned int greenMask : 32;
+    unsigned int blueMask : 32;
+    unsigned int alphaMask : 32;
+    unsigned int colorSpace : 32;
+    CIEXYZTRIPLE endpoints;
+    unsigned int redGamma : 32;
+    unsigned int greenGamma : 32;
+    unsigned int blueGamma : 32;
+    unsigned int intent : 32;
+    unsigned int profileData : 32;
+    unsigned int profileSize : 32;
+    unsigned int reserved : 32;
+} headerV5;
 
 void readBMP(char name[]);
 void* buildStruct(FILE* file);
@@ -98,13 +172,13 @@ void* buildStruct(FILE* file) {
     //Number of color planes
     //Must be 1 if header specifically is BITMAPINFOHEADER
     //offset 26
-    WORD colorPlanes;
-    fread(&colorPlanes, sizeof(WORD), 1, file);
+    unsigned short colorPlanes;
+    fread(&colorPlanes, sizeof(short), 1, file);
 
     //Color depth
     //offset 28
-    WORD colorDepth;
-    fread(&colorDepth, sizeof(WORD), 1, file);
+    unsigned short bitCount;
+    fread(&bitCount, sizeof(short), 1, file);
 
     //Compression method being used
     //offset 30
