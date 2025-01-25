@@ -171,7 +171,7 @@ bmp* readBMP(char name[]) {
 
     //Compression method being used
     //offset 30
-    unsigned int compression;
+    CompressionIdentifier compression;
     fread(&compression, sizeof(DWORD), 1, file);
 
 
