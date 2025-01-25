@@ -136,7 +136,7 @@ bmp* readBMP(char name[]) {
     DWORD verticalRes;
     fread(&verticalRes, sizeof(DWORD), 1, file);
 
-    //The number of colors in the color palette, or 0 to default to 2n
+    //The number of colors in the color palette, or 0 to default to 2^n
     //offset 46
     DWORD colorNum;
     fread(&colorNum, sizeof(DWORD), 1, file);
@@ -145,4 +145,65 @@ bmp* readBMP(char name[]) {
     //offset 50
     DWORD importantColors;
     fread(&importantColors, sizeof(DWORD), 1, file);
+
+    //ONLY FOR BITMAPV4HEADER
+    if (size==108 || size==124) {
+        //red, green and blue Masks, specifies the color component of each pixel,
+        //valid only if compression is set to BI_BITFIELDS.
+        //offset 54
+        DWORD redMask;
+        fread(&redMask, sizeof(DWORD), 1, file);
+        //offset 58
+        DWORD greenMask;
+        fread(&greenMask, sizeof(DWORD), 1, file);
+        //offset 62
+        DWORD blueMask;
+        fread(&blueMask, sizeof(DWORD), 1, file);
+        //Color mask that specifies the alpha component of each pixel
+        //offset 66
+        DWORD alphaMask;
+        fread(&alphaMask, sizeof(DWORD), 1, file);
+        //The color space of the DIB. Only possible value is LCS_CALIBRATED_RGB
+        //offset 70
+        DWORD colorSpace;
+        fread(&colorSpace, sizeof(DWORD), 1, file);
+        //A CIEXYZTRIPLE structure that specifies the x, y, and z coordinates
+        //of the three colors that correspond to the red, green, and blue endpoints for the logical
+        //color space associated with the bitmap.
+        //This member is ignored unless the colorSpace member specifies LCS_CALIBRATED_RGB.
+        //offset 74
+        CIEXYZTRIPLE endpoints;
+        fread(&endpoints, sizeof(CIEXYZTRIPLE), 1, file);
+        //Tone response curves for red, green and blue.
+        //These members are ignored unless color values are calibrated RGB values
+        //and colorSpace is set to LCS_CALIBRATED_RGB.
+        //offset 110
+        DWORD redGamma;
+        fread(&redGamma, sizeof(DWORD), 1, file);
+        //offset 114
+        DWORD greenGamma;
+        fread(&greenGamma, sizeof(DWORD), 1, file);
+        //offset 118
+        DWORD blueGamma;
+        fread(&blueGamma, sizeof(DWORD), 1, file);
+
+    }
+
+    if (size==124) {
+        //Rendering intent for bitmap
+        //offset 122
+        DWORD intent;
+        fread(&intent, sizeof(DWORD), 1, file);
+        //The offset, in bytes, from the beginning of the BITMAPV5HEADER structure to the start of the profile data
+        //offset 126
+        DWORD profileData;
+        fread(&profileData, sizeof(DWORD), 1, file);
+        //Size, in bytes, of embedded profile data
+        //offset 130
+        DWORD profileSize;
+        fread(&profileSize, sizeof(DWORD), 1, file);
+        //Skipping reserved bytes
+        //offset 134
+        fseek(file, 4, SEEK_CUR);
+    }
 }
