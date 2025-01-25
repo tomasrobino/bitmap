@@ -174,10 +174,6 @@ bmp* readBMP(char name[]) {
     CompressionIdentifier compression;
     fread(&compression, sizeof(DWORD), 1, file);
 
-
-
-
-
     //Size of the raw bitmap data; a dummy 0 can be given for BI_RGB bitmaps.
     //offset 34
     unsigned int dataSize;
