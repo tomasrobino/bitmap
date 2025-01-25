@@ -27,6 +27,7 @@ typedef enum {
 } CompressionIdentifier;
 
 void readBMP(char name[]);
+void* buildStruct(FILE* file);
 
 int main(void) {
     readBMP("img.bmp");
@@ -35,13 +36,7 @@ int main(void) {
 }
 
 
-void readBMP(char name[]) {
-    FILE* file = fopen(name, "rb");
-    //fseek(file, 0, SEEK_END);
-    //const unsigned long fileLen = ftell(file);
-    //rewind(file);
-    //return malloc(fileLen*sizeof(char));
-
+void* buildStruct(FILE* file) {
     //BITMAP HEADER
 
     //First 2 bytes
@@ -182,6 +177,9 @@ void readBMP(char name[]) {
         unsigned int blueGamma;
         fread(&blueGamma, sizeof(unsigned int), 1, file);
 
+        if (size==108) {
+
+        }
     }
 
     if (size==124) {
@@ -201,4 +199,13 @@ void readBMP(char name[]) {
         //offset 134
         fseek(file, 4, SEEK_CUR);
     }
+}
+
+void readBMP(char name[]) {
+    FILE* file = fopen(name, "rb");
+    //fseek(file, 0, SEEK_END);
+    //const unsigned long fileLen = ftell(file);
+    //rewind(file);
+    //return malloc(fileLen*sizeof(char));
+    void* header = buildStruct(file);
 }
