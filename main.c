@@ -17,6 +17,19 @@ typedef enum {
     TYPE_BITMAPV5HEADER
 } DIBHeaders;
 
+typedef enum {
+    TYPE_BI_RGB,
+    TYPE_BI_RLE8,
+    TYPE_BI_RLE4,
+    TYPE_BI_BITFIELDS,
+    TYPE_BI_JPEG,
+    TYPE_BI_PNG,
+    TYPE_BI_ALPHABITFIELDS,
+    TYPE_BI_CMYK = 11,
+    TYPE_BI_CMYKRLE8,
+    TYPE_BI_CMYKRLE4
+} CompressionIdentifier;
+
 typedef struct {
     DIBHeaders type;
     void* bytes;
@@ -43,6 +56,7 @@ bmp* readBMP(char name[]) {
     //BITMAP HEADER
 
     //First 2 bytes
+    //offset 0
     char title[2];
     fread(title, sizeof(char), 2, file);
     if (!strcmp(title, "BM")) {
@@ -62,29 +76,37 @@ bmp* readBMP(char name[]) {
     }
 
     //File size
+    //offset 2
     unsigned int size;
     fread(&size, 4, 1, file);
 
     //Skipping reserved bytes
+    //offset 6
     fseek(file, 4, SEEK_CUR);
 
     //Offset
+    //offset 10
     unsigned int offset;
     fread(&offset, 4, 1, file);
 
-    //DIB Header
-    headerDIB dibHeader;
+    //DIB HEADER
 
+
+    headerDIB dibHeader;
     //DIB Header size
+    //offset 14
     unsigned int dibSize;
     fread(&dibSize, sizeof(DWORD), 1, file);
 
     //All headers have a size=dibSize except for when dibSize=16
+
+    /*
     if (dibSize == 16) {
         dibHeader.bytes = calloc(1,64);
     } else {
         dibHeader.bytes = malloc(dibSize);
     }
+    */
 
     //Setting types
     switch (dibSize) {
@@ -124,5 +146,60 @@ bmp* readBMP(char name[]) {
             //Unrecognized DIB header
     }
 
+    //FROM THIS POINT ON ONLY BITMAPINFOHEADER AND SUCCESSIVE VERSIONS ARE IMPLEMENTED
 
+    //Width in pixels
+    //offset 18
+    int width;
+    fread(&width, sizeof(DWORD), 1, file);
+
+    //Height in pixels
+    //offset 22
+    int height;
+    fread(&height, sizeof(DWORD), 1, file);
+
+    //Number of color planes
+    //Must be 1 if header specifically is BITMAPINFOHEADER
+    //offset 26
+    WORD colorPlanes;
+    fread(&colorPlanes, sizeof(WORD), 1, file);
+
+    //Color depth
+    //offset 28
+    WORD colorDepth;
+    fread(&colorDepth, sizeof(WORD), 1, file);
+
+    //Compression method being used
+    //offset 30
+    unsigned int compression;
+    fread(&compression, sizeof(DWORD), 1, file);
+
+
+
+
+
+    //Size of the raw bitmap data; a dummy 0 can be given for BI_RGB bitmaps.
+    //offset 34
+    unsigned int dataSize;
+    fread(&dataSize, sizeof(DWORD), 1, file);
+
+    //Horizontal resolution of the image. (pixel per metre, signed integer)
+    //offset 38
+    int horizontalRes;
+    fread(&horizontalRes, sizeof(DWORD), 1, file);
+
+    //Vertical resolution of the image. (pixel per metre, signed integer)
+    //offset 42
+    int verticalRes;
+    fread(&verticalRes, sizeof(DWORD), 1, file);
+
+    //The number of colors in the color palette, or 0 to default to 2n
+    //offset 46
+    unsigned int colorNum;
+    fread(&colorNum, sizeof(DWORD), 1, file);
+
+    //The number of important colors used, or 0 when every color is important; generally ignored
+    //offset 50
+    unsigned int importantColors;
+    fread(&importantColors, sizeof(DWORD), 1, file);
 }
