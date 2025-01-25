@@ -30,22 +30,6 @@ typedef enum {
     TYPE_BI_CMYKRLE4
 } CompressionIdentifier;
 
-typedef struct {
-    DIBHeaders type;
-    int width;
-    int height;
-    WORD colorPlanes;
-    WORD colorDepth;
-    CompressionIdentifier compression;
-    unsigned int dataSize;
-    int horizontalRes;
-    int verticalRes;
-    unsigned int colorNum;
-    unsigned int importantColors;
-    void* bytes;
-} headerDIB;
-
-
 bmp* readBMP(char name[]);
 
 int main(void) {
@@ -102,58 +86,63 @@ bmp* readBMP(char name[]) {
     //DIB HEADER
 
 
-    headerDIB dibHeader;
     //DIB Header size
     //All headers have a size=dibSize except for when dibSize=16
     //Setting types
     //offset 14
-    unsigned int dibSize;
+    DWORD dibSize;
     fread(&dibSize, sizeof(DWORD), 1, file);
-    if (dibSize==16) {
-        dibHeader.type = 64;
-    } else dibHeader.type = dibSize;
 
-    //FROM THIS POINT ON ONLY BITMAPINFOHEADER AND SUCCESSIVE VERSIONS ARE IMPLEMENTED
+    //FROM THIS POINT ON, ONLY BITMAPINFOHEADER AND SUCCESSIVE VERSIONS ARE IMPLEMENTED
 
     //Width in pixels
     //offset 18
-    fread(&dibHeader.width, sizeof(DWORD), 1, file);
+    DWORD width;
+    fread(&width, sizeof(DWORD), 1, file);
 
     //Height in pixels
     //offset 22
-    fread(&dibHeader.height, sizeof(DWORD), 1, file);
+    DWORD height;
+    fread(&height, sizeof(DWORD), 1, file);
 
     //Number of color planes
     //Must be 1 if header specifically is BITMAPINFOHEADER
     //offset 26
-    fread(&dibHeader.colorPlanes, sizeof(WORD), 1, file);
+    WORD colorPlanes;
+    fread(&colorPlanes, sizeof(WORD), 1, file);
 
     //Color depth
     //offset 28
-    fread(&dibHeader.colorDepth, sizeof(WORD), 1, file);
+    WORD colorDepth;
+    fread(&colorDepth, sizeof(WORD), 1, file);
 
     //Compression method being used
     //offset 30
-
-    fread(&dibHeader.compression, sizeof(DWORD), 1, file);
+    DWORD compression;
+    fread(&compression, sizeof(DWORD), 1, file);
 
     //Size of the raw bitmap data; a dummy 0 can be given for BI_RGB bitmaps.
     //offset 34
-    fread(&dibHeader.dataSize, sizeof(DWORD), 1, file);
+    DWORD dataSize;
+    fread(&dataSize, sizeof(DWORD), 1, file);
 
     //Horizontal resolution of the image. (pixel per metre, signed integer)
     //offset 38
-    fread(&dibHeader.horizontalRes, sizeof(DWORD), 1, file);
+    DWORD horizontalRes;
+    fread(&horizontalRes, sizeof(DWORD), 1, file);
 
     //Vertical resolution of the image. (pixel per metre, signed integer)
     //offset 42
-    fread(&dibHeader.verticalRes, sizeof(DWORD), 1, file);
+    DWORD verticalRes;
+    fread(&verticalRes, sizeof(DWORD), 1, file);
 
     //The number of colors in the color palette, or 0 to default to 2n
     //offset 46
-    fread(&dibHeader.colorNum, sizeof(DWORD), 1, file);
+    DWORD colorNum;
+    fread(&colorNum, sizeof(DWORD), 1, file);
 
     //The number of important colors used, or 0 when every color is important; generally ignored
     //offset 50
-    fread(&dibHeader.importantColors, sizeof(DWORD), 1, file);
+    DWORD importantColors;
+    fread(&importantColors, sizeof(DWORD), 1, file);
 }
