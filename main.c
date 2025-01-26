@@ -178,6 +178,12 @@ void* buildHeader(FILE* file) {
     //offset 26
     unsigned short colorPlanes;
     fread(&colorPlanes, sizeof(short), 1, file);
+    if (colorPlanes != 1) {
+        //Invalid value
+        //Moving pointer to end of header
+        fseek(file, (long)dibSize-24, SEEK_CUR);
+        return NULL;
+    }
 
     //Color depth
     //offset 28
