@@ -38,7 +38,7 @@ typedef struct {
 } CIEXYZTRIPLE;
 
 typedef struct {
-    unsigned int size : 32;
+    DIBHeaders size : 32;
     int width : 32;
     int height: 32;
     unsigned short colorPlanes : 16;
@@ -52,7 +52,7 @@ typedef struct {
 } headerV1;
 
 typedef struct {
-    unsigned int size : 32;
+    DIBHeaders size : 32;
     int width : 32;
     int height: 32;
     unsigned short colorPlanes : 16;
@@ -75,7 +75,7 @@ typedef struct {
 } headerV4;
 
 typedef struct {
-    unsigned int size : 32;
+    DIBHeaders size : 32;
     int width : 32;
     int height: 32;
     unsigned short colorPlanes : 16;
@@ -105,7 +105,7 @@ void readBMP(char name[]);
 void* buildStruct(FILE* file);
 
 int main(void) {
-    //void* header = readBMP("img.bmp");
+    readBMP("example.bmp");
 
     return 0;
 }
@@ -212,7 +212,7 @@ void* buildStruct(FILE* file) {
     fread(&importantColors, sizeof(unsigned int), 1, file);
 
     //V4 AND V5
-    if (size==108 || size==124) {
+    if (size==TYPE_BITMAPV4HEADER || size==TYPE_BITMAPV5HEADER) {
         //red, green and blue Masks, specifies the color component of each pixel,
         //valid only if compression is set to BI_BITFIELDS.
         //offset 54
@@ -252,7 +252,7 @@ void* buildStruct(FILE* file) {
         unsigned int blueGamma;
         fread(&blueGamma, sizeof(unsigned int), 1, file);
 
-        if (size==108) {
+        if (size==TYPE_BITMAPV4HEADER) {
             headerV4* header = malloc(sizeof(headerV1));
             header->size=size;
             header->width=width;
@@ -320,26 +320,42 @@ void* buildStruct(FILE* file) {
         return header;
     }
 
-    headerV1* header = malloc(sizeof(headerV1));
-    header->size=size;
-    header->width=width;
-    header->height=height;
-    header->colorPlanes=colorPlanes;
-    header->bitCount=bitCount;
-    header->compression=compression;
-    header->sizeImage=dataSize;
-    header->horizontalRes=horizontalRes;
-    header->verticalRes=verticalRes;
-    header->colorNum=colorNum;
-    header->importantColors=importantColors;
-    return header;
+    if (size==TYPE_BITMAPINFOHEADER) {
+        headerV1* header = malloc(sizeof(headerV1));
+        header->size=size;
+        header->width=width;
+        header->height=height;
+        header->colorPlanes=colorPlanes;
+        header->bitCount=bitCount;
+        header->compression=compression;
+        header->sizeImage=dataSize;
+        header->horizontalRes=horizontalRes;
+        header->verticalRes=verticalRes;
+        header->colorNum=colorNum;
+        header->importantColors=importantColors;
+        return header;
+    }
+    printf("%d", size);
+    return NULL;
 }
 
 void readBMP(char name[]) {
-    FILE* file = fopen(name, "rb");
+    FILE* file = fopen(name, "r");
     //fseek(file, 0, SEEK_END);
     //const unsigned long fileLen = ftell(file);
     //rewind(file);
     //return malloc(fileLen*sizeof(char));
+
+    //Building DIB header structure
     void* header = buildStruct(file);
+    //Identifying it
+    if (((headerV1*)header)->size == TYPE_BITMAPINFOHEADER ) {
+        free((headerV1*)header);
+    } else if (((headerV4*)header)->size == TYPE_BITMAPV4HEADER ) {
+        free((headerV4*)header);
+    } else if (((headerV5*)header)->size == TYPE_BITMAPV5HEADER ) {
+        free((headerV5*)header);
+    } else {
+        free(header);
+    }
 }
