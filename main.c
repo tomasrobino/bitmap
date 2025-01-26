@@ -352,7 +352,7 @@ void readBMP(char name[]) {
     //Building DIB header structure
     void* header = buildStruct(file);
     if (header != NULL) {
-        printf("%d" ,((headerV1*)header)->size);
+        printf("%d" ,((headerV1*)header)->dibSize);
         free(header);
     }
     fclose(file);
