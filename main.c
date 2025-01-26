@@ -102,7 +102,7 @@ typedef struct {
 } headerV5;
 
 void readBMP(char name[]);
-void* buildHeader(FILE* file);
+headerV1* buildHeader(FILE* file);
 void print_header_v1(headerV1* header);
 void print_header_v4(headerV4* header);
 void print_header_v5(headerV5* header);
@@ -114,27 +114,16 @@ int main(void) {
 }
 
 
-void* buildHeader(FILE* file) {
+headerV1* buildHeader(FILE* file) {
     //BITMAP HEADER
 
     //First 2 bytes
     //offset 0
     char title[2];
     fread(title, sizeof(char), 2, file);
-    if (!strcmp(title, "BM")) {
-        // Windows 3.1x, 95, NT, ... etc.
-    } else if (!strcmp(title, "BA")) {
-        // OS/2 struct bitmap array
-    } else if (!strcmp(title, "CI")) {
-        // OS/2 struct color icon
-    } else if (!strcmp(title, "CP")) {
-        // OS/2 const color pointer
-    } else if (!strcmp(title, "IC")) {
-        // OS/2 struct icon
-    } else if (!strcmp(title, "PT")) {
-        // OS/2 pointer
-    } else {
+    if (strcmp(title, "BM") != 0) {
         //Unrecognized file header
+        return NULL;
     }
 
     //File size
@@ -220,131 +209,19 @@ void* buildHeader(FILE* file) {
     unsigned int importantColors;
     fread(&importantColors, sizeof(unsigned int), 1, file);
 
-    //V4 AND V5
-    if (dibSize==TYPE_BITMAPV4HEADER || dibSize==TYPE_BITMAPV5HEADER) {
-        //red, green and blue Masks, specifies the color component of each pixel,
-        //valid only if compression is set to BI_BITFIELDS.
-        //offset 54
-        unsigned int redMask;
-        fread(&redMask, sizeof(unsigned int), 1, file);
-        //offset 58
-        unsigned int greenMask;
-        fread(&greenMask, sizeof(unsigned int), 1, file);
-        //offset 62
-        unsigned int blueMask;
-        fread(&blueMask, sizeof(unsigned int), 1, file);
-        //Color mask that specifies the alpha component of each pixel
-        //offset 66
-        unsigned int alphaMask;
-        fread(&alphaMask, sizeof(unsigned int), 1, file);
-        //The color space of the DIB. Only possible value is LCS_CALIBRATED_RGB
-        //offset 70
-        unsigned int colorSpace;
-        fread(&colorSpace, sizeof(unsigned int), 1, file);
-        //A CIEXYZTRIPLE structure that specifies the x, y, and z coordinates
-        //of the three colors that correspond to the red, green, and blue endpoints for the logical
-        //color space associated with the bitmap.
-        //This member is ignored unless the colorSpace member specifies LCS_CALIBRATED_RGB.
-        //offset 74
-        CIEXYZTRIPLE endpoints;
-        fread(&endpoints, sizeof(CIEXYZTRIPLE), 1, file);
-        //Tone response curves for red, green and blue.
-        //These members are ignored unless color values are calibrated RGB values
-        //and colorSpace is set to LCS_CALIBRATED_RGB.
-        //offset 110
-        unsigned int redGamma;
-        fread(&redGamma, sizeof(unsigned int), 1, file);
-        //offset 114
-        unsigned int greenGamma;
-        fread(&greenGamma, sizeof(unsigned int), 1, file);
-        //offset 118
-        unsigned int blueGamma;
-        fread(&blueGamma, sizeof(unsigned int), 1, file);
-
-        if (dibSize==TYPE_BITMAPV4HEADER) {
-            headerV4* header = malloc(sizeof(headerV4));
-            header->dibSize=dibSize;
-            header->width=width;
-            header->height=height;
-            header->colorPlanes=colorPlanes;
-            header->bitCount=bitCount;
-            header->compression=compression;
-            header->sizeImage=dataSize;
-            header->horizontalRes=horizontalRes;
-            header->verticalRes=verticalRes;
-            header->colorNum=colorNum;
-            header->importantColors=importantColors;
-            header->redMask=redMask;
-            header->greenMask=greenMask;
-            header->blueMask=blueMask;
-            header->alphaMask=alphaMask;
-            header->colorSpace=colorSpace;
-            header->endpoints=endpoints;
-            header->redGamma=redGamma;
-            header->greenGamma=greenGamma;
-            header->blueGamma=blueGamma;
-            return header;
-        }
-
-        //Rendering intent for bitmap
-        //offset 122
-        unsigned int intent;
-        fread(&intent, sizeof(unsigned int), 1, file);
-        //The offset, in bytes, from the beginning of the BITMAPV5HEADER structure to the start of the profile data
-        //offset 126
-        unsigned int profileData;
-        fread(&profileData, sizeof(unsigned int), 1, file);
-        //Size, in bytes, of embedded profile data
-        //offset 130
-        unsigned int profileSize;
-        fread(&profileSize, sizeof(unsigned int), 1, file);
-        //Skipping reserved bytes
-        //offset 134
-        fseek(file, 4, SEEK_CUR);
-
-        headerV5* header = malloc(sizeof(headerV5));
-        header->dibSize=dibSize;
-        header->width=width;
-        header->height=height;
-        header->colorPlanes=colorPlanes;
-        header->bitCount=bitCount;
-        header->compression=compression;
-        header->sizeImage=dataSize;
-        header->horizontalRes=horizontalRes;
-        header->verticalRes=verticalRes;
-        header->colorNum=colorNum;
-        header->importantColors=importantColors;
-        header->redMask=redMask;
-        header->greenMask=greenMask;
-        header->blueMask=blueMask;
-        header->alphaMask=alphaMask;
-        header->colorSpace=colorSpace;
-        header->endpoints=endpoints;
-        header->redGamma=redGamma;
-        header->greenGamma=greenGamma;
-        header->blueGamma=blueGamma;
-        header->intent=intent;
-        header->profileData=profileData;
-        header->profileSize=profileSize;
-        return header;
-    }
-
-    if (dibSize==TYPE_BITMAPINFOHEADER) {
-        headerV1* header = malloc(sizeof(headerV1));
-        header->dibSize=dibSize;
-        header->width=width;
-        header->height=height;
-        header->colorPlanes=colorPlanes;
-        header->bitCount=bitCount;
-        header->compression=compression;
-        header->sizeImage=dataSize;
-        header->horizontalRes=horizontalRes;
-        header->verticalRes=verticalRes;
-        header->colorNum=colorNum;
-        header->importantColors=importantColors;
-        return header;
-    }
-    return NULL;
+    headerV1* header = malloc(sizeof(headerV1));
+    header->dibSize=dibSize;
+    header->width=width;
+    header->height=height;
+    header->colorPlanes=colorPlanes;
+    header->bitCount=bitCount;
+    header->compression=compression;
+    header->sizeImage=dataSize;
+    header->horizontalRes=horizontalRes;
+    header->verticalRes=verticalRes;
+    header->colorNum=colorNum;
+    header->importantColors=importantColors;
+    return header;
 }
 
 void readBMP(char name[]) {
@@ -359,7 +236,7 @@ void readBMP(char name[]) {
     //return malloc(fileLen*sizeof(char));
 
     //Building DIB header structure
-    void* header = buildHeader(file);
+    headerV1* header = buildHeader(file);
     if (header != NULL) {
         print_header_v1(header);
         free(header);
