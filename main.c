@@ -38,7 +38,7 @@ typedef struct {
 } CIEXYZTRIPLE;
 
 typedef struct {
-    DIBHeaders size : 32;
+    DIBHeaders dibSize : 32;
     int width : 32;
     int height: 32;
     unsigned short colorPlanes : 16;
@@ -52,7 +52,7 @@ typedef struct {
 } headerV1;
 
 typedef struct {
-    DIBHeaders size : 32;
+    DIBHeaders dibSize : 32;
     int width : 32;
     int height: 32;
     unsigned short colorPlanes : 16;
@@ -75,7 +75,7 @@ typedef struct {
 } headerV4;
 
 typedef struct {
-    DIBHeaders size : 32;
+    DIBHeaders dibSize : 32;
     int width : 32;
     int height: 32;
     unsigned short colorPlanes : 16;
@@ -136,8 +136,8 @@ void* buildStruct(FILE* file) {
 
     //File size
     //offset 2
-    unsigned int size;
-    fread(&size, 4, 1, file);
+    unsigned int fileSize;
+    fread(&fileSize, 4, 1, file);
 
     //Skipping reserved bytes
     //offset 6
@@ -254,7 +254,7 @@ void* buildStruct(FILE* file) {
 
         if (dibSize==TYPE_BITMAPV4HEADER) {
             headerV4* header = malloc(sizeof(headerV4));
-            header->size=size;
+            header->dibSize=dibSize;
             header->width=width;
             header->height=height;
             header->colorPlanes=colorPlanes;
@@ -294,7 +294,7 @@ void* buildStruct(FILE* file) {
         fseek(file, 4, SEEK_CUR);
 
         headerV5* header = malloc(sizeof(headerV5));
-        header->size=size;
+        header->dibSize=dibSize;
         header->width=width;
         header->height=height;
         header->colorPlanes=colorPlanes;
@@ -322,7 +322,7 @@ void* buildStruct(FILE* file) {
 
     if (dibSize==TYPE_BITMAPINFOHEADER) {
         headerV1* header = malloc(sizeof(headerV1));
-        header->size=size;
+        header->dibSize=dibSize;
         header->width=width;
         header->height=height;
         header->colorPlanes=colorPlanes;
