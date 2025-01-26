@@ -212,7 +212,7 @@ void* buildStruct(FILE* file) {
     fread(&importantColors, sizeof(unsigned int), 1, file);
 
     //V4 AND V5
-    if (size==TYPE_BITMAPV4HEADER || size==TYPE_BITMAPV5HEADER) {
+    if (dibSize==TYPE_BITMAPV4HEADER || dibSize==TYPE_BITMAPV5HEADER) {
         //red, green and blue Masks, specifies the color component of each pixel,
         //valid only if compression is set to BI_BITFIELDS.
         //offset 54
@@ -252,7 +252,7 @@ void* buildStruct(FILE* file) {
         unsigned int blueGamma;
         fread(&blueGamma, sizeof(unsigned int), 1, file);
 
-        if (size==TYPE_BITMAPV4HEADER) {
+        if (dibSize==TYPE_BITMAPV4HEADER) {
             headerV4* header = malloc(sizeof(headerV4));
             header->size=size;
             header->width=width;
@@ -273,7 +273,7 @@ void* buildStruct(FILE* file) {
             header->endpoints=endpoints;
             header->redGamma=redGamma;
             header->greenGamma=greenGamma;
-            header->blueGamma=header->blueGamma;
+            header->blueGamma=blueGamma;
             return header;
         }
 
@@ -313,14 +313,14 @@ void* buildStruct(FILE* file) {
         header->endpoints=endpoints;
         header->redGamma=redGamma;
         header->greenGamma=greenGamma;
-        header->blueGamma=header->blueGamma;
+        header->blueGamma=blueGamma;
         header->intent=intent;
         header->profileData=profileData;
         header->profileSize=profileSize;
         return header;
     }
 
-    if (size==TYPE_BITMAPINFOHEADER) {
+    if (dibSize==TYPE_BITMAPINFOHEADER) {
         headerV1* header = malloc(sizeof(headerV1));
         header->size=size;
         header->width=width;
@@ -335,12 +335,15 @@ void* buildStruct(FILE* file) {
         header->importantColors=importantColors;
         return header;
     }
-    printf("%d", size);
     return NULL;
 }
 
 void readBMP(char name[]) {
     FILE* file = fopen(name, "r");
+    if (file == NULL) {
+        perror("Failed to open file");
+        return;
+    }
     //fseek(file, 0, SEEK_END);
     //const unsigned long fileLen = ftell(file);
     //rewind(file);
@@ -348,14 +351,9 @@ void readBMP(char name[]) {
 
     //Building DIB header structure
     void* header = buildStruct(file);
-    //Identifying it
-    if (((headerV1*)header)->size == TYPE_BITMAPINFOHEADER ) {
-        free((headerV1*)header);
-    } else if (((headerV4*)header)->size == TYPE_BITMAPV4HEADER ) {
-        free((headerV4*)header);
-    } else if (((headerV5*)header)->size == TYPE_BITMAPV5HEADER ) {
-        free((headerV5*)header);
-    } else {
+    if (header != NULL) {
+        printf("%d" ,((headerV1*)header)->size);
         free(header);
     }
+    fclose(file);
 }
