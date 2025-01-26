@@ -43,7 +43,7 @@ typedef struct {
     int height: 32;
     unsigned short colorPlanes : 16;
     unsigned short bitCount : 16;
-    unsigned int compression : 32;
+    CompressionIdentifier compression : 32;
     unsigned int sizeImage : 32;
     int horizontalRes : 32;
     int verticalRes :32;
@@ -57,7 +57,7 @@ typedef struct {
     int height: 32;
     unsigned short colorPlanes : 16;
     unsigned short bitCount : 16;
-    unsigned int compression : 32;
+    CompressionIdentifier compression : 32;
     unsigned int sizeImage : 32;
     int horizontalRes : 32;
     int verticalRes :32;
@@ -80,7 +80,7 @@ typedef struct {
     int height: 32;
     unsigned short colorPlanes : 16;
     unsigned short bitCount : 16;
-    unsigned int compression : 32;
+    CompressionIdentifier compression : 32;
     unsigned int sizeImage : 32;
     int horizontalRes : 32;
     int verticalRes :32;
@@ -102,7 +102,10 @@ typedef struct {
 } headerV5;
 
 void readBMP(char name[]);
-void* buildStruct(FILE* file);
+void* buildHeader(FILE* file);
+void print_header_v1(headerV1* header);
+void print_header_v4(headerV4* header);
+void print_header_v5(headerV5* header);
 
 int main(void) {
     readBMP("example.bmp");
@@ -111,7 +114,7 @@ int main(void) {
 }
 
 
-void* buildStruct(FILE* file) {
+void* buildHeader(FILE* file) {
     //BITMAP HEADER
 
     //First 2 bytes
@@ -183,7 +186,7 @@ void* buildStruct(FILE* file) {
 
     //Compression method being used
     //offset 30
-    unsigned int compression;
+    CompressionIdentifier compression;
     fread(&compression, sizeof(unsigned int), 1, file);
 
     //Size of the raw bitmap data; a dummy 0 can be given for BI_RGB bitmaps.
@@ -350,10 +353,52 @@ void readBMP(char name[]) {
     //return malloc(fileLen*sizeof(char));
 
     //Building DIB header structure
-    void* header = buildStruct(file);
+    void* header = buildHeader(file);
     if (header != NULL) {
-        printf("%d" ,((headerV1*)header)->dibSize);
+        print_header_v1(header);
         free(header);
     }
     fclose(file);
+}
+
+void print_header_v1(headerV1* header) {
+    printf("dibSize %d\n", header->dibSize);
+    printf("width %d\n", header->width);
+    printf("height %d\n", header->height);
+    printf("colorPlanes %d\n", header->colorPlanes);
+    printf("bitCount %d\n", header->bitCount);
+    printf("compression %d\n", header->compression);
+    printf("sizeImage %d\n", header->sizeImage);
+    printf("horizontalRes %d\n", header->horizontalRes);
+    printf("verticalRes %d\n", header->verticalRes);
+    printf("colorNum %d\n", header->colorNum);
+    printf("importantColors %d\n", header->importantColors);
+}
+
+void print_header_v4(headerV4* header) {
+    print_header_v1((headerV1*)header);
+    printf("redMask %d\n", header->redMask);
+    printf("greenMask %d\n", header->greenMask);
+    printf("blueMask %d\n", header->blueMask);
+    printf("alphaMask %d\n", header->alphaMask);
+    printf("colorSpace %d\n", header->colorSpace);
+    printf("endpoints %d\n", header->endpoints.ciexyzRed.ciexyzX);
+    printf("endpoints %d\n", header->endpoints.ciexyzRed.ciexyzY);
+    printf("endpoints %d\n", header->endpoints.ciexyzRed.ciexyzZ);
+    printf("endpoints %d\n", header->endpoints.ciexyzGreen.ciexyzX);
+    printf("endpoints %d\n", header->endpoints.ciexyzGreen.ciexyzY);
+    printf("endpoints %d\n", header->endpoints.ciexyzGreen.ciexyzZ);
+    printf("endpoints %d\n", header->endpoints.ciexyzBlue.ciexyzX);
+    printf("endpoints %d\n", header->endpoints.ciexyzBlue.ciexyzY);
+    printf("endpoints %d\n", header->endpoints.ciexyzBlue.ciexyzZ);
+    printf("redGamma %d\n", header->redGamma);
+    printf("greenGamma %d\n", header->greenGamma);
+    printf("blueGamma %d\n", header->blueGamma);
+}
+void print_header_v5(headerV5* header) {
+    print_header_v4((headerV4*)header);
+    printf("intent %d\n", header->intent);
+    printf("profileData %d\n", header->profileData);
+    printf("profileSize %d\n", header->profileSize);
+    printf("reserved %d\n", header->reserved);
 }
