@@ -253,7 +253,7 @@ void* buildStruct(FILE* file) {
         fread(&blueGamma, sizeof(unsigned int), 1, file);
 
         if (size==TYPE_BITMAPV4HEADER) {
-            headerV4* header = malloc(sizeof(headerV1));
+            headerV4* header = malloc(sizeof(headerV4));
             header->size=size;
             header->width=width;
             header->height=height;
@@ -293,7 +293,7 @@ void* buildStruct(FILE* file) {
         //offset 134
         fseek(file, 4, SEEK_CUR);
 
-        headerV5* header = malloc(sizeof(headerV1));
+        headerV5* header = malloc(sizeof(headerV5));
         header->size=size;
         header->width=width;
         header->height=height;
