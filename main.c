@@ -305,25 +305,34 @@ char* readRow(int width, int bitCount, CompressionIdentifier compression, FILE* 
             if (bitCount == 1) {
                 //1 bit per pixel (bpp)
                 char row[width/8 +1];
-                fread(row, bitCount, width/8 +1, file);
+                fread(row, 1, width/8 +1, file);
                 make_gap(file);
                 return row;
             } else if (bitCount == 4) {
                 //4 bits per pixel
                 char row[width/2 +1];
-                fread(row, bitCount, width/8 +1, file);
+                fread(row, 1, width/2 +1, file);
                 make_gap(file);
                 return row;
-            } else {
+            } else if (bitCount == 8) {
                 //8 bits per pixel
                 char row[width];
-                fread(row, bitCount, width, file);
+                fread(row, 1, width, file);
                 make_gap(file);
+                return row;
+            } else if (bitCount == 16) {
+                char row[width*2];
+                fread(row, 2, width, file);
+                make_gap(file);
+                return row;
+            } else if (bitCount == 32) {
+                char row[width*4];
+                fread(row, 4, width, file);
                 return row;
             }
             break;
         case TYPE_BI_RLE8:
-            
+
             break;
         case TYPE_BI_RLE4:
             
