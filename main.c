@@ -303,7 +303,19 @@ char* readRow(int width, int bitCount, CompressionIdentifier compression, FILE* 
     switch (compression) {
         case TYPE_BI_RGB:
             if (bitCount == 1) {
-                //1 bit per pixell (bpp)
+                //1 bit per pixel (bpp)
+                char row[width/8 +1];
+                fread(row, bitCount, width/8 +1, file);
+                make_gap(file);
+                return row;
+            } else if (bitCount == 4) {
+                //4 bits per pixel
+                char row[width/2 +1];
+                fread(row, bitCount, width/8 +1, file);
+                make_gap(file);
+                return row;
+            } else {
+                //8 bits per pixel
                 char row[width];
                 fread(row, bitCount, width, file);
                 make_gap(file);
