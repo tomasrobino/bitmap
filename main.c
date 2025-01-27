@@ -245,8 +245,14 @@ void readBMP(char name[]) {
     }
     print_header_v1(header);
 
+    //COLOR MASKS
+    unsigned int colorMasks[3];
+    if (header->compression == TYPE_BI_BITFIELDS) {
+        fread(&colorMasks, sizeof(unsigned int), 3, file);
+    }
+
     //COLOR TABLE
-    long colorTableEntries = header->colorNum;
+    unsigned long colorTableEntries = header->colorNum;
     if (header->bitCount <= 8 || header->colorNum>0) {
         //Color table immediately following DIB header
         //Array of RGBQUAD. Size is given by colorNum.
@@ -256,9 +262,10 @@ void readBMP(char name[]) {
             colorTableEntries = pow(2, header->bitCount);
         }
     }
-    char colorTable[colorTableEntries][4];
+    //colorTableEntries should be zero if there's no color table (or if it has maximum colors)
+    unsigned int colorTable[colorTableEntries][4];
     for (int i = 0; i < colorTableEntries; i++) {
-        fread(&colorTable[i], sizeof(int), 4, file);
+        fread(&colorTable[i], sizeof(unsigned int), 4, file);
     }
     
 
