@@ -104,6 +104,7 @@ typedef struct {
 
 void readBMP(char name[]);
 headerV1* buildHeader(FILE* file);
+void make_gap(FILE* file);
 void print_header_v1(const headerV1* header);
 void print_header_v4(headerV4* header);
 void print_header_v5(headerV5* header);
@@ -268,11 +269,17 @@ void readBMP(char name[]) {
         fread(&colorTable[i], sizeof(unsigned int), 4, file);
     }
     
+    //GAP 1
+    make_gap(file);
 
 
 
     free(header);
     fclose(file);
+}
+
+void make_gap(FILE* file) {
+    if (ftell(file)%4 != 0) fseek(file, 4-(ftell(file)%4), SEEK_CUR);
 }
 
 void print_header_v1(const headerV1* header) {
