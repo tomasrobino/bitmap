@@ -105,6 +105,7 @@ typedef struct {
 void readBMP(char name[]);
 headerV1* buildHeader(FILE* file);
 void make_gap(FILE* file);
+char* readRow(int width, int bitCount, CompressionIdentifier compression, FILE* file);
 void print_header_v1(const headerV1* header);
 void print_header_v4(headerV4* header);
 void print_header_v5(headerV5* header);
@@ -272,14 +273,56 @@ void readBMP(char name[]) {
     //GAP 1
     make_gap(file);
 
-
+    //PIXEL TABLE
+    //If header->height > 0, then rows are bottom up
+    if (header->height > 0) {
+        for (int i = header->height; i > 0; i--) {
+            
+        }
+    } else {
+        for (int i = 0; i < header->height; i++) {
+            
+        }
+    }
+    
 
     free(header);
     fclose(file);
 }
 
 void make_gap(FILE* file) {
-    if (ftell(file)%4 != 0) fseek(file, 4-(ftell(file)%4), SEEK_CUR);
+    if (ftell(file)%4 != 0) {
+        fseek(file, 4-(ftell(file)%4), SEEK_CUR);
+    }
+}
+
+char* readRow(int width, int bitCount, CompressionIdentifier compression, FILE* file) {
+    //stride = ((((biWidth * biBitCount) + 31) & ~31) >> 3);
+    //biSizeImage = abs(biHeight) * stride;
+    int stride = floor((width * bitCount + 31) / 32) * 4;
+    switch (compression) {
+        case TYPE_BI_RGB:
+            if (bitCount == 1) {
+                //1 bit per pixell (bpp)
+                char row[width];
+                fread(row, bitCount, width, file);
+                make_gap(file);
+            }
+            break;
+        case TYPE_BI_RLE8:
+            
+            break;
+        case TYPE_BI_RLE4:
+            
+            break;
+        case TYPE_BI_BITFIELDS:
+            
+            break;
+        default:
+            //Unrecognized compression
+            return NULL;
+            break;
+    }
 }
 
 void print_header_v1(const headerV1* header) {
