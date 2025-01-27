@@ -246,18 +246,17 @@ void readBMP(char name[]) {
     print_header_v1(header);
 
     //COLOR TABLE
+    long colorTableEntries = header->colorNum;
     if (header->bitCount <= 8 || header->colorNum>0) {
         //Color table immediately following DIB header
         //Array of RGBQUAD. Size is given by colorNum.
         //If colorNum is 0, the array contains the maximum number of colors
         //for the given bitdepth; that is, 2^bitCount colors
-        long entries = header->colorNum;
-        if (entries==0) {
-            entries = pow(2, header->bitCount);
+        if (colorTableEntries==0) {
+            colorTableEntries = pow(2, header->bitCount);
         }
-
-        char colorTable[entries][4];
     }
+    char colorTable[colorTableEntries][4];
 
 
 
