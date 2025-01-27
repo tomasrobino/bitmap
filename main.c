@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 typedef enum {
     TYPE_BITMAPCOREHEADER=12,
@@ -103,7 +104,7 @@ typedef struct {
 
 void readBMP(char name[]);
 headerV1* buildHeader(FILE* file);
-void print_header_v1(headerV1* header);
+void print_header_v1(const headerV1* header);
 void print_header_v4(headerV4* header);
 void print_header_v5(headerV5* header);
 
@@ -237,14 +238,35 @@ void readBMP(char name[]) {
 
     //Building DIB header structure
     headerV1* header = buildHeader(file);
-    if (header != NULL) {
-        print_header_v1(header);
+    if (header == NULL) {
+        fclose(file);
         free(header);
+        return;
     }
+    print_header_v1(header);
+
+    //COLOR TABLE
+    if (header->bitCount <= 8 || header->colorNum>0) {
+        //Color table immediately following DIB header
+        //Array of RGBQUAD. Size is given by colorNum.
+        //If colorNum is 0, the array contains the maximum number of colors
+        //for the given bitdepth; that is, 2^bitCount colors
+        long entries = header->colorNum;
+        if (entries==0) {
+            entries = pow(2, header->bitCount);
+        }
+
+        char colorTable[entries][4];
+    }
+
+
+
+    free(header);
     fclose(file);
 }
 
-void print_header_v1(headerV1* header) {
+void print_header_v1(const headerV1* header) {
+    printf("\n");
     printf("dibSize %d\n", header->dibSize);
     printf("width %d\n", header->width);
     printf("height %d\n", header->height);
@@ -257,7 +279,6 @@ void print_header_v1(headerV1* header) {
     printf("colorNum %d\n", header->colorNum);
     printf("importantColors %d\n", header->importantColors);
 }
-
 void print_header_v4(headerV4* header) {
     print_header_v1((headerV1*)header);
     printf("redMask %d\n", header->redMask);
