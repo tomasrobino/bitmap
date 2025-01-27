@@ -307,6 +307,7 @@ char* readRow(int width, int bitCount, CompressionIdentifier compression, FILE* 
                 char row[width];
                 fread(row, bitCount, width, file);
                 make_gap(file);
+                return row;
             }
             break;
         case TYPE_BI_RLE8:
