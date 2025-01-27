@@ -315,24 +315,53 @@ char* readRow(int width, int bitCount, CompressionIdentifier compression, FILE* 
                 make_gap(file);
                 return row;
             } else if (bitCount == 8) {
-                //8 bits per pixel
+                //1 byte per pixel
                 char row[width];
                 fread(row, 1, width, file);
                 make_gap(file);
                 return row;
             } else if (bitCount == 16) {
-                char row[width*2];
+                //2 bytes per pixel
+                unsigned short row[width];
                 fread(row, 2, width, file);
                 make_gap(file);
                 return row;
             } else if (bitCount == 32) {
-                char row[width*4];
+                //4 bytes per pixel
+                unsigned int row[width];
                 fread(row, 4, width, file);
                 return row;
             }
             break;
         case TYPE_BI_RLE8:
-
+            //Only works for 8bpp
+            char rep = fgetc(file);
+            if ( rep == 0) {
+                //Absolute mode
+            } else {
+                //Encoded mode
+                char row[width];
+                int pixelCount = 0;
+                int pixelAux = rep;
+                while(pixelAux != 0) {
+                    char color = fgetc(file);
+                    for (int i = 0; i < pixelAux; i++) {
+                        row[i+pixelCount] = color;
+                    }
+                    pixelCount += pixelAux;
+                    pixelAux = fgetc(file);
+                    if (pixelAux == 0) {
+                        char sec = fgetc(file);
+                        if (sec == 0) {
+                            //End of row
+                            for (int j = 0; j < width-pixelCount; j++) {
+                                row[j+pixelCount] = 0;
+                            }
+                            
+                        }
+                    }
+                }
+            }
             break;
         case TYPE_BI_RLE4:
             
