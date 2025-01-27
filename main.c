@@ -257,6 +257,10 @@ void readBMP(char name[]) {
         }
     }
     char colorTable[colorTableEntries][4];
+    for (int i = 0; i < colorTableEntries; i++) {
+        fread(&colorTable[i], sizeof(int), 4, file);
+    }
+    
 
 
 
