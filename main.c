@@ -303,31 +303,31 @@ char* readUncompressed(int width, int bitCount, FILE* file) {
     //int stride = floor((width * bitCount + 31) / 32) * 4;
     if (bitCount == 1) {
         //1 bit per pixel (bpp)
-        char row[width/8 +1];
+        char* row = malloc(ceil(width/8));
         fread(row, 1, width/8 +1, file);
         make_gap(file);
         return row;
     } else if (bitCount == 4) {
         //4 bits per pixel
-        char row[width/2 +1];
+        char* row = malloc(ceil(width/2));
         fread(row, 1, width/2 +1, file);
         make_gap(file);
         return row;
     } else if (bitCount == 8) {
         //1 byte per pixel
-        char row[width];
+        char* row = malloc(width);
         fread(row, 1, width, file);
         make_gap(file);
         return row;
     } else if (bitCount == 16) {
         //2 bytes per pixel
-        unsigned short row[width];
+        unsigned short row = malloc(width*2);
         fread(row, 2, width, file);
         make_gap(file);
         return row;
     } else if (bitCount == 32) {
         //4 bytes per pixel
-        unsigned int row[width];
+        unsigned int row = malloc(width*4);
         fread(row, 4, width, file);
         return row;
     }
