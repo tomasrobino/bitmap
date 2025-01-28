@@ -340,6 +340,7 @@ char* readRLE8(int height, int width, FILE* file) {
         //Absolute mode
     } else {
         //Encoded mode
+        //Doesn't contain actual colors, but indices for the color table
         char* pixelArray = malloc(height*width);
         /*
         int pixelCount = 0;
@@ -371,13 +372,20 @@ char* readRLE8(int height, int width, FILE* file) {
         int firstByte = rep;
         while(end != 1) {
             char secondByte = fgetc(file);
-            if (firstByte == 0 && secondByte == 0) {
-                //End of current row
-                pixelArray[pixelTotal] = '\n';
-                pixelTotal++;
-            } else if (firstByte == 0 && secondByte == 1) {
-                //End of bitmap
-                end = 1;
+            if (firstByte == 0 && (secondByte == 0 || secondByte == 1)) {
+                //End of current row or end of file
+                //Add possibly missing pixels
+                if (pixelTotal%width != 0 ) {
+                    for (int i = 0; i < pixelTotal%width; i++) {
+                        pixelArray[pixelTotal] = 0;
+                        pixelTotal++;
+                    }                    
+                }
+
+                if (secondByte == 1) {
+                    //End of bitmap
+                    end = 1;
+                }
             } else if (firstByte == 0 && secondByte == 2) {
                 //Delta offset
                 char thirdByte = fgetc(file);
